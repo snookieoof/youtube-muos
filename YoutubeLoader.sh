@@ -8,15 +8,15 @@ fi
 wget -P "YoutubeData/" https://github.com/nvcuong1312/YtMuos/archive/refs/heads/master.zip
 unzip -o "YoutubeData/master.zip" -d "YoutubeData/UnzipData/"
 
-if [ -d "mnt/mmc/MUOS/application/.Youtube" ]; then
-  rm -r "mnt/mmc/MUOS/application/.Youtube"
+if [ -d "mnt/mmc/MUOS/application/.youtube" ]; then
+  rm -r "mnt/mmc/MUOS/application/.youtube"
 fi
 
 if [ -e "mnt/mmc/MUOS/application/Youtube.sh" ]; then
     rm -r "mnt/mmc/MUOS/application/Youtube.sh"
 fi
 
-mv "YoutubeData/UnzipData/YtMuos-master/.Youtube" "mnt/mmc/MUOS/application/"
+mv "YoutubeData/UnzipData/YtMuos-master/.youtube" "mnt/mmc/MUOS/application/"
 mv "YoutubeData/UnzipData/YtMuos-master/Youtube.sh" "mnt/mmc/MUOS/application/Youtube.sh"
 
 echo "-----------------------------------"
