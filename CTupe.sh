@@ -1,10 +1,6 @@
 #!/bin/bash
-# ICON: ctupe
-. /opt/muos/script/var/func.sh
 
-if pgrep -f "playbgm.sh" >/dev/null; then
-	killall -q "playbgm.sh" "mpg123"
-fi
+. /opt/muos/script/var/func.sh
 
 echo app >/tmp/act_go
 
