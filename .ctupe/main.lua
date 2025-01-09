@@ -62,7 +62,7 @@ end
 
  function OnKeyPress(key)
     if key == "a" then
-        local command = string.format("./data/mpv.sh %s %s", "cuong", "soc")
+        local command = string.format("mpv.sh %s %s", "cuong", "soc")
         os.execute(command)
     end
  end
