@@ -5,11 +5,10 @@ function love.load()
 end
 
 function love.draw()
-   love.graphics.print("hell")
+    love.graphics.print("aa")
 end
 
 function love.update(dt)
-    
 end
 
 function love.gamepadpressed(joystick, button)
@@ -52,5 +51,13 @@ function love.gamepadpressed(joystick, button)
     end
     if button == "guide" then
         key = "guide"
+    end
+
+    OnKeyPress(key)
+ end
+
+ function OnKeyPress(key)
+    if key == "a" then
+        os.execute("ffplay data/soc")
     end
  end
