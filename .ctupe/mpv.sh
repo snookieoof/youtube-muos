@@ -5,8 +5,6 @@
 NAME=$1
 FILE=$2
 
-echo "cuong > ttt.txt"
-
 LOG_INFO "$0" 0 "Content Launch" "DETAIL"
 LOG_INFO "$0" 0 "NAME" "$NAME"
 LOG_INFO "$0" 0 "FILE" "$FILE"
@@ -26,7 +24,7 @@ export SDL_GAMECONTROLLERCONFIG_FILE="/usr/lib/gamecontrollerdb.txt"
 
 SET_VAR "system" "foreground_process" "mpv"
 
-$GPTOKEYB "mpv" -c "general.gptk" & /usr/bin/mpv "$FILE"
+$GPTOKEYB "mpv" -c "data/general.gptk" & /usr/bin/mpv "$FILE"
 
 killall -q gptokeyb2
 
