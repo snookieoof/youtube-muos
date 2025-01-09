@@ -1,7 +1,6 @@
 local love = require("love")
 
 function love.load()
-    
 end
 
 function love.draw()
@@ -54,10 +53,15 @@ function love.gamepadpressed(joystick, button)
     end
 
     OnKeyPress(key)
- end
+end
+
+function love.keypressed( key )
+	OnKeyPress(key)
+end
+
 
  function OnKeyPress(key)
     if key == "a" then
-        os.execute("ffplay data/soc")
+        os.execute(". data/mpv.sh %s %s > log.txt", "cuong", "data/soc")
     end
  end
