@@ -5,14 +5,12 @@
 NAME=$1
 FILE=$2
 
-echo "cuong > ttt.txt"
-
 LOG_INFO "$0" 0 "Content Launch" "DETAIL"
 LOG_INFO "$0" 0 "NAME" "$NAME"
 LOG_INFO "$0" 0 "FILE" "$FILE"
 
 GPTOKEYB="$(GET_VAR "device" "storage/rom/mount")/MUOS/emulator/gptokeyb/gptokeyb2"
-MPV_DIR="$(GET_VAR "device" "storage/rom/mount")/MUOS/emulator/mpv"
+APP_DIR="/mnt/mmc/MUOS/application/.ctupe/data"
 
 HOME="$(GET_VAR "device" "board/home")"
 export HOME
@@ -26,7 +24,9 @@ export SDL_GAMECONTROLLERCONFIG_FILE="/usr/lib/gamecontrollerdb.txt"
 
 SET_VAR "system" "foreground_process" "mpv"
 
-$GPTOKEYB "mpv" -c "general.gptk" & /usr/bin/mpv "$FILE"
+$GPTOKEYB "mpv" -c "$APP_DIR/general.gptk"
+&
+/usr/bin/mpv --input-ipc-server=/tmp/ctupesocket "$FILE"
 
 killall -q gptokeyb2
 

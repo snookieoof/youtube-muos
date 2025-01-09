@@ -1,10 +1,12 @@
 local love = require("love")
+local CT = require("ct")
 
+local msg = ""
 function love.load()
 end
 
 function love.draw()
-    love.graphics.print("aa")
+    love.graphics.print(msg)
 end
 
 function love.update(dt)
@@ -59,10 +61,23 @@ function love.keypressed( key )
 	OnKeyPress(key)
 end
 
+function OnKeyPress(key)
+    if key == "x" then
+        CT.GenerateMediaFile("https://www.youtube.com/watch?v=chqimsVKYt4")
+        msg = "GenerateFile done"
+    end
 
- function OnKeyPress(key)
     if key == "a" then
-        local command = string.format("mpv.sh %s %s", "cuong", "data/soc")
-        os.execute(command)
+        CT.Play()
+    end
+
+    if key == "b" then
+        -- local ipc = io.open("/tmp/ctupesocket", "w")
+        -- ipc:write('{"command": ["quit"]}')
+        -- ipc:close()
+
+        -- os.execute("sleep 1")
+
+        -- player:close()
     end
  end
