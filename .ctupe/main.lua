@@ -63,12 +63,12 @@ end
 
 function OnKeyPress(key)
     if key == "x" then
-        CT.GenerateMediaFile("https://www.youtube.com/watch?v=chqimsVKYt4")
-        msg = "GenerateFile done"
+        -- CT.GenerateMediaFile("https://www.youtube.com/watch?v=chqimsVKYt4")
+        -- msg = "GenerateFile done"
     end
 
     if key == "a" then
-        CT.Play()
+        CT.Play("https://www.youtube.com/watch?v=YJzh5XSnxC0")
     end
 
     if key == "b" then
