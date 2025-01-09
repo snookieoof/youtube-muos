@@ -1,5 +1,5 @@
 #!/bin/bash
-# ICON: yTube
+# ICON: ctupe
 . /opt/muos/script/var/func.sh
 
 if pgrep -f "playbgm.sh" >/dev/null; then
@@ -9,7 +9,7 @@ fi
 echo app >/tmp/act_go
 
 # Define paths and commands
-LOVEDIR="$(GET_VAR "device" "storage/rom/mount")/MUOS/application/.Youtube"
+LOVEDIR="$(GET_VAR "device" "storage/rom/mount")/MUOS/application/.ctupe"
 GPTOKEYB="$(GET_VAR "device" "storage/rom/mount")/MUOS/emulator/gptokeyb/gptokeyb2.armhf"
 BINDIR="$LOVEDIR/bin"
 
