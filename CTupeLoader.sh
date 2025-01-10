@@ -34,6 +34,8 @@ fi
 
 mv "CTupeData/UnzipData/YtMuos-master/.ctupe" "mnt/mmc/MUOS/application/"
 
+echo "YOUR_API_KEY_HERE" > "mnt/mmc/MUOS/application/.ctupe/data/API"
+
 echo "-----------------------------------"
 echo "|Author     : CuongNV             |"
 echo "|Complete!                        |"
