@@ -10,7 +10,7 @@ Config.SEARCH_RESUTL_JSON = "data/result.json"
 Config.FONT_PATH = "Assets/Font/Font.ttf"
 
 Config.SEARCH_URL = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=%s&type=video&maxResults=%s&key=%s"
-Config.SEARCH_MAX_RESULT = 10
+Config.SEARCH_MAX_RESULT = 30
 
 Config.PLAY_CMD =
 [[
