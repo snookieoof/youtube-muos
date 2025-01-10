@@ -1,4 +1,5 @@
 local Config = require("config")
+local https = require("https")
 
 local CT = {}
 
@@ -12,9 +13,13 @@ function CT.LoadAPIKEY()
     return API_KEY
 end
 
-function CT.Search(searchKey, apiKey)
-    -- local max = Config.SEARCH_MAX_RESULT
-    local searchUrl = string.format(Config.SEARCH_URL, searchKey, Config.SEARCH_MAX_RESULT, apiKey)
+function CT.Search(searchKey)
+    local searchUrl = string.format(Config.SEARCH_URL, searchKey, Config.SEARCH_MAX_RESULT, API_KEY)
+    print(searchUrl)
+    local body, statusCode, headers, statusText = https.request(searchUrl)
+    -- print(body, statusCode, headers, statusText)
+    -- print(body)
+    print(statusCode)
 end
 
 function CT.GenerateMediaFile(url)
