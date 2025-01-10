@@ -1,8 +1,13 @@
 local Config = {}
 
 Config.MPV_PATH = "/opt/muos/script/launch/ext-mpv-ctupe.sh"
-
 Config.MEDIA_PATH = "data/media"
+Config.API_KEY_PATH = "data/api"
+
+Config.FONT_PATH = "Assets/Font/Font.ttf"
+
+Config.SEARCH_URL = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=%s&type=video&maxResults=%s&key=%s"
+Config.SEARCH_MAX_RESULT = 10
 
 Config.PLAY_CMD =
 [[

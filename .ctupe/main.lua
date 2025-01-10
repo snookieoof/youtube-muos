@@ -2,7 +2,15 @@ local love = require("love")
 local CT = require("ct")
 
 local msg = ""
+local hasAPIKEY = false
+
 function love.load()
+    if CT.LoadAPIKEY() == "YOUR_API_KEY_HERE" then
+        msg = "APIKEY"
+        return
+    end
+
+    hasAPIKEY = true
 end
 
 function love.draw()
@@ -10,6 +18,27 @@ function love.draw()
 end
 
 function love.update(dt)
+end
+
+-- Header
+function HeaderUI()
+    local xPos = 0
+    local yPos = 0
+
+    love.graphics.setColor(0.31, 0.31, 0.118)
+    love.graphics.rectangle("fill", xPos, yPos, 640, 30)
+
+    love.graphics.setColor(0.98, 0.98, 0.749)
+    love.graphics.setFont(fontBig)
+    love.graphics.draw(ic_bluetooth, 640 - 25, yPos + 4)
+    love.graphics.print("Bluetooth Settings", xPos + 250, yPos + 2)
+
+    Now = os.date('*t')
+    local formatted_time = string.format("%02d:%02d", tonumber(Now.hour), tonumber(Now.min))
+    love.graphics.setColor(0.98, 0.98, 0.749, 0.7)
+    love.graphics.print(formatted_time, xPos + 10, yPos + 2)
+
+    love.graphics.setFont(fontSmall)
 end
 
 function love.gamepadpressed(joystick, button)
@@ -63,8 +92,6 @@ end
 
 function OnKeyPress(key)
     if key == "x" then
-        -- CT.GenerateMediaFile("https://www.youtube.com/watch?v=chqimsVKYt4")
-        -- msg = "GenerateFile done"
     end
 
     if key == "a" then
@@ -72,12 +99,5 @@ function OnKeyPress(key)
     end
 
     if key == "b" then
-        -- local ipc = io.open("/tmp/ctupesocket", "w")
-        -- ipc:write('{"command": ["quit"]}')
-        -- ipc:close()
-
-        -- os.execute("sleep 1")
-
-        -- player:close()
     end
  end
