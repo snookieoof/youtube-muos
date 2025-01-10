@@ -196,7 +196,7 @@ end
 function OnKeyPress(key)
     if key == "x" then
         if not hasAPIKEY then return end
-        searchData = CT.Search("real madrid")
+        searchData = CT.Search("ghibli song")
 
         for _,item in pairs(searchData) do
             table.insert(imgData, {data = imageFromUrl(item.thumbnail)})
@@ -205,7 +205,9 @@ function OnKeyPress(key)
     end
 
     if key == "a" then
-        CT.Play("https://www.youtube.com/watch?v=YJzh5XSnxC0")
+        local id = searchData[cIdx].id
+        local url = string.format("https://www.youtube.com/watch?v=%s", id)
+        CT.Play(url)
     end
 
     if key == "b" then
