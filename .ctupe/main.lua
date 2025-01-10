@@ -79,7 +79,8 @@ function BottomUI()
     love.graphics.setColor(0.102, 0, 0.459)
     love.graphics.rectangle("fill", xPos, yPos, 640, 29)
 
-    DrawLeftText(xPos, yPos + 5, msg)
+    love.graphics.setColor(1,1,1)
+    DrawLeftText(xPos, 450, msg)
     -- love.graphics.print(msg, xPos + 5, yPos)
 end
 
@@ -161,6 +162,8 @@ function OnKeyPress(key)
     if key == "x" then
         if not hasAPIKEY then return end
         CT.Search("real madrid")
+
+        msg = "done"
     end
 
     if key == "a" then
