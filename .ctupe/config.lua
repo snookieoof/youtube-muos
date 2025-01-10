@@ -1,8 +1,11 @@
 local Config = {}
 
+Config.GRID_PAGE_ITEM = 5
 Config.MPV_PATH = "/opt/muos/script/launch/ext-mpv-ctupe.sh"
 Config.MEDIA_PATH = "data/media"
 Config.API_KEY_PATH = "data/api"
+
+Config.SEARCH_RESUTL_JSON = "data/result.json"
 
 Config.FONT_PATH = "Assets/Font/Font.ttf"
 

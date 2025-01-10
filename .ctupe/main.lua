@@ -1,9 +1,16 @@
 local love = require("love")
+local Config = require("config")
 local CT = require("ct")
 local Font = require("font")
+local http = require("socket.http")
 
 local msg = ""
 local hasAPIKEY = false
+
+local searchData = {}
+local imgData = {}
+local cPage = 1
+local cIdx = 1
 
 function love.load()
     Font.Load()
@@ -24,7 +31,6 @@ function love.draw()
     GuideUI()
 
     if not hasAPIKEY then return end
-    
 end
 
 function love.update(dt)
@@ -58,19 +64,48 @@ function BodyUI()
     local widthImgItem = 83
     local heigthImgItem = 83
 
-    for i = 1, 5, 1 do
-        local h = heightItem * (i - 1) + i
+    local widthImgMain = 239
+    local heightImgMain = 239
+
+    local total = table.getn(searchData)
+    local idxStart = cPage * Config.GRID_PAGE_ITEM - Config.GRID_PAGE_ITEM + 1
+    local idxEnd = cPage * Config.GRID_PAGE_ITEM
+    local iPos = 0
+
+    for i = idxStart, idxEnd do
+        if i > total then break end
+
+        local h = heightItem * (iPos) + iPos + 1
         love.graphics.setColor(0.004, 0.173, 0.231)
         love.graphics.rectangle("fill", xPos, yPos + h , widthItem, heightItem)
 
-        love.graphics.setColor(0.004, 0.373, 0.231)
-        love.graphics.rectangle("fill", xPos, yPos + h, widthImgItem, heigthImgItem)
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.draw(imgData[i].data, xPos, yPos + h, 0, 0.66, 0.66, 0 , 0)
+
+        love.graphics.setColor(1,1,1,0.6)
+        love.graphics.setFont(Font.Normal())
+        love.graphics.printf(searchData[i].title, xPos + widthImgItem + 1, yPos + h, 320)
+        love.graphics.setFont(Font.Small())
+        love.graphics.print(searchData[i].channelTitle, xPos, yPos + h + 63)
+        love.graphics.print(searchData[i].time, xPos + widthImgItem + 250, yPos + h + 63)
+
+        if cIdx == iPos + 1 then
+            love.graphics.setColor(1, 1, 0.4, 0.15)
+            love.graphics.rectangle("fill", xPos, yPos + h, widthItem, heightItem, 4)
+        end
+
+        iPos = iPos + 1
     end
 
-    local widthImgMain = 239
-    local heightImgMain = 239
     love.graphics.setColor(0.004, 0.173, 0.231)
     love.graphics.rectangle("fill", xPos + widthItem + 1, yPos, widthImgMain, heightImgMain)
+end
+
+function imageFromUrl(url)
+	return love.graphics.newImage(
+	       love.image.newImageData(
+	       love.filesystem.newFileData(
+	       http.request(url), '', 'file')))
 end
 
 function BottomUI()
@@ -161,8 +196,11 @@ end
 function OnKeyPress(key)
     if key == "x" then
         if not hasAPIKEY then return end
-        CT.Search("real madrid")
+        searchData = CT.Search("real madrid")
 
+        for _,item in pairs(searchData) do
+            table.insert(imgData, {data = imageFromUrl(item.thumbnail)})
+        end
         msg = "done"
     end
 
@@ -172,4 +210,100 @@ function OnKeyPress(key)
 
     if key == "b" then
     end
+
+    if table.getn(searchData) > 0 then
+        if key == "up" then
+            GridKeyUp(searchData, cPage, cIdx, Config.GRID_PAGE_ITEM,
+            function(idx) cIdx = idx end,
+            function(page) cPage = page end)
+        end
+
+        if key == "down" then
+            GridKeyDown(searchData, cPage, cIdx, Config.GRID_PAGE_ITEM,
+            function(idx)
+                cIdx = idx
+             end,
+            function(page)
+                cPage = page
+            end)
+        end
+    end
  end
+
+ function GridKeyUp(list,currPage, idxCurr, maxPageItem, callBackSetIdx, callBackChangeCurrPage)
+    local total = table.getn(list)
+    if total < 1 then return end
+    local isMultiplePage = total > maxPageItem
+    if isMultiplePage then
+        local remainder = total % maxPageItem
+        local totalPage = 1
+        local q, _ = math.modf(total / maxPageItem)
+        if remainder > 0 then
+            totalPage =  q + 1
+        else
+            totalPage = q
+            remainder = maxPageItem
+        end
+
+        if currPage > 1 then
+            if idxCurr > 1 then
+                callBackSetIdx(idxCurr - 1)
+            else
+                if callBackChangeCurrPage then callBackChangeCurrPage(currPage - 1) end
+                callBackSetIdx(maxPageItem)
+            end
+        else
+            if idxCurr > 1 then
+                callBackSetIdx(idxCurr - 1)
+            else
+                if callBackChangeCurrPage then callBackChangeCurrPage(totalPage) end
+                callBackSetIdx(remainder)
+            end
+        end
+    else
+        if idxCurr > 1 then
+            callBackSetIdx(idxCurr - 1)
+        else
+            callBackSetIdx(total)
+        end
+    end
+end
+
+function GridKeyDown(list, currPage, idxCurr, maxPageItem, callBackSetIdx, callBackChangeCurrPage)
+    local total = table.getn(list)
+    if total < 1 then return end
+    local isMultiplePage = total > maxPageItem
+    if isMultiplePage then
+        local remainder = total % maxPageItem
+        local totalPage = 1
+        local q, _ = math.modf(total / maxPageItem)
+        if remainder > 0 then
+            totalPage =  q + 1
+        else
+            totalPage = q
+            remainder = maxPageItem
+        end
+
+        if currPage < totalPage then
+            if idxCurr < maxPageItem then
+                callBackSetIdx(idxCurr + 1)
+            else
+                if callBackChangeCurrPage then callBackChangeCurrPage(currPage + 1) end
+                callBackSetIdx(1)
+            end
+        else
+            if  idxCurr < remainder then
+                callBackSetIdx(idxCurr + 1)
+            else
+                if callBackChangeCurrPage then callBackChangeCurrPage(1) end
+                callBackSetIdx(1)
+            end
+        end
+    else
+        if idxCurr < total then
+            callBackSetIdx(idxCurr + 1)
+        else
+            callBackSetIdx(1)
+        end
+    end
+end

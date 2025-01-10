@@ -1,5 +1,5 @@
 local Config = require("config")
--- local https = require("https")
+local json = require("json")
 
 local CT = {}
 
@@ -14,14 +14,36 @@ function CT.LoadAPIKEY()
 end
 
 function CT.Search(searchKey)
-    local searchUrl = string.format(Config.SEARCH_URL, searchKey, Config.SEARCH_MAX_RESULT, API_KEY)
-    local command = "wget -P \"data/result.json\" " .. searchUrl
-    os.execute(command)
-    -- print(searchUrl)
-    -- local body, statusCode, headers, statusText = https.request(searchUrl)
-    -- -- print(body, statusCode, headers, statusText)
-    -- -- print(body)
-    -- print(statusCode)
+    if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") ~= "1" then
+        local searchCmd = string.format(Config.SEARCH_URL, searchKey, Config.SEARCH_MAX_RESULT, API_KEY)
+        local command = "wget \"" .. searchCmd .."\" -O " .. Config.SEARCH_RESUTL_JSON
+        os.execute(command)
+    end
+
+    local file = io.open(Config.SEARCH_RESUTL_JSON, "r")
+    local dataResultJs = file:read("*all")
+    file:close()
+
+    local rsObj = json.decode(dataResultJs)
+    local items = rsObj.items
+
+    local resultData = {}
+    if items ~= nil and table.getn(items) > 0 then
+        for idx, item in pairs(items) do
+            table.insert(
+                resultData,
+                {
+                    id = item.id.videoId,
+                    time = string.sub(item.snippet.publishedAt, 1, 10),
+                    title = item.snippet.title,
+                    description = item.snippet.description,
+                    thumbnail = item.snippet.thumbnails.default.url,
+                    channelTitle = item.snippet.channelTitle
+                 })
+        end
+    end
+
+    return resultData
 end
 
 function CT.GenerateMediaFile(url)
