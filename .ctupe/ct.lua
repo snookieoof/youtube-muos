@@ -1,5 +1,5 @@
 local Config = require("config")
-local https = require("https")
+-- local https = require("https")
 
 local CT = {}
 
@@ -15,11 +15,13 @@ end
 
 function CT.Search(searchKey)
     local searchUrl = string.format(Config.SEARCH_URL, searchKey, Config.SEARCH_MAX_RESULT, API_KEY)
-    print(searchUrl)
-    local body, statusCode, headers, statusText = https.request(searchUrl)
-    -- print(body, statusCode, headers, statusText)
-    -- print(body)
-    print(statusCode)
+    local command = "wget -P \"data/result.json\" " .. searchUrl
+    os.execute(command)
+    -- print(searchUrl)
+    -- local body, statusCode, headers, statusText = https.request(searchUrl)
+    -- -- print(body, statusCode, headers, statusText)
+    -- -- print(body)
+    -- print(statusCode)
 end
 
 function CT.GenerateMediaFile(url)
