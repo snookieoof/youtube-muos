@@ -98,7 +98,7 @@ function Keyboard.keypressed(key, callback)
         end
     end
 
-    if key == "a" then
+    if key == "y" then
         callback(Keyboard.rows[row_index][column_index]:lower())
     end
 end
