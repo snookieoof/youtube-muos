@@ -160,9 +160,12 @@ function GuideUI()
 
     love.graphics.setColor(1,1,1,0.9)
     love.graphics.setFont(Font.Small())
-    DrawLeftText(xPos + 5, yPos + heightTextBlock, "[X]: Search")
-    DrawLeftText(xPos + 5, yPos + heightTextBlock + 20, "[A]: Play")
-    DrawLeftText(xPos + 5, yPos + heightTextBlock + 40, "[L]: Keyboard")
+    DrawLeftText(xPos + 5, yPos + heightTextBlock, "[A] : Play")
+    DrawLeftText(xPos + 5, yPos + heightTextBlock + 20, "[L1]: Toggle Keyboard")
+    DrawLeftText(xPos + 5, yPos + heightTextBlock + 40, "[Y] : Enter")
+    DrawLeftText(xPos + 5, yPos + heightTextBlock + 60, "[X] : Backspace")
+    DrawLeftText(xPos + 5, yPos + heightTextBlock + 80, "[Start]: Search")
+    DrawLeftText(xPos + 5, yPos + heightTextBlock + 100, "[Start + Select] : Exit")
 end
 
 function DrawCenteredText(rectX, rectY, rectWidth, text)
@@ -253,6 +256,14 @@ function OnKeyPress(key)
         SearchData()
     end
 
+    if key == "a" then
+        if table.getn(searchData) >= cIdx  then
+            local id = searchData[cIdx].id
+            local url = string.format("https://www.youtube.com/watch?v=%s", id)
+            CT.Play(url)
+        end
+    end
+
     if isKeyboarFocus then
         Keyboard.keypressed(key, OnKeyboarCallBack)
 
@@ -263,15 +274,6 @@ function OnKeyPress(key)
         end
 
         return
-    end
-
-    if key == "a" then
-        local id = searchData[cIdx].id
-        local url = string.format("https://www.youtube.com/watch?v=%s", id)
-        CT.Play(url)
-    end
-
-    if key == "b" then
     end
 
     if table.getn(searchData) > 0 then
