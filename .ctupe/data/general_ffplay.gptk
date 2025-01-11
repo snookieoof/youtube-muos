@@ -1,9 +1,8 @@
 a_hk = esc
 
 a = p			# pause
+b = q           # quit
 x = m			# mute sound
-left = left		# Seek backward 5 seconds
-right = right	# Seek forward 5 seconds
 
 
 #While playing

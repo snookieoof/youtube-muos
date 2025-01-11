@@ -3,6 +3,9 @@ local Config = require("config")
 local CT = require("ct")
 local Font = require("font")
 local Keyboard = require("keyboard")
+local Thread = require("thread")
+local Loading = require("loading")
+local Text = require("text")
 
 local msg = "DEVELOPMENT STAGE"
 local hasAPIKEY = false
@@ -15,9 +18,12 @@ local cIdx = 1
 local isKeyboarFocus = false
 local keyboardText = ""
 
+local isLoading = false
+
 function love.load()
     Font.Load()
     Keyboard:create()
+    Thread.Create()
 
     if CT.LoadAPIKEY() == "YOUR_API_KEY_HERE" then
         msg = "APIKEY is missing"
@@ -38,15 +44,29 @@ function love.draw()
     GuideUI()
 
     love.graphics.setFont(Font.Small())
+
     Keyboard:draw()
+
+    if isLoading then
+        Loading.Draw()
+    end
 
     if not hasAPIKEY then return end
 end
 
 function love.update(dt)
-    local imgDownloaded = love.thread.getChannel("download_result"):pop()
+    local imgDownloaded = Thread.GetDownloadResutlChannel():pop()
     if imgDownloaded then
         table.insert(imgDataList, imgDownloaded)
+    end
+
+    local playDone = Thread.GetPlayDone():pop()
+    if playDone then
+        isLoading = false
+    end
+
+    if isLoading then
+        Loading.Update(dt)
     end
 end
 
@@ -60,12 +80,12 @@ function HeaderUI()
 
     love.graphics.setColor(0.98, 0.98, 0.749)
     love.graphics.setFont(Font.Big())
-    DrawCenteredText(xPos, yPos, 640, "CTupe")
+    Text.DrawCenteredText(xPos, yPos, 640, "CTupe")
 
     Now = os.date('*t')
     local formatted_time = string.format("%02d:%02d", tonumber(Now.hour), tonumber(Now.min))
     love.graphics.setColor(0.98, 0.98, 0.749, 0.7)
-    DrawLeftText(xPos, yPos, formatted_time)
+    Text.DrawLeftText(xPos, yPos, formatted_time)
 
     love.graphics.setFont(Font.Normal())
 end
@@ -140,7 +160,7 @@ function BottomUI()
     love.graphics.rectangle("fill", xPos, yPos, 640, 29)
 
     love.graphics.setColor(1,1,1)
-    DrawLeftText(xPos + 5, 450 + 5, msg)
+    Text.DrawLeftText(xPos + 5, 450 + 5, msg)
 end
 
 function GuideUI()
@@ -156,27 +176,17 @@ function GuideUI()
     love.graphics.setColor(0.304, 0.173, 0.231, 1)
     love.graphics.rectangle("fill", xPos + 15, yPos, width - 30, heightTextBlock)
     love.graphics.setColor(1,1,1,0.9)
-    DrawLeftText(xPos + 15 + 2, yPos + 5, keyboardText)
+    Text.DrawLeftText(xPos + 15 + 2, yPos + 5, keyboardText)
 
     love.graphics.setColor(1,1,1,0.9)
     love.graphics.setFont(Font.Small())
-    DrawLeftText(xPos + 5, yPos + heightTextBlock, "[A] : Play")
-    DrawLeftText(xPos + 5, yPos + heightTextBlock + 20, "[L1]: Toggle Keyboard")
-    DrawLeftText(xPos + 5, yPos + heightTextBlock + 40, "[Y] : Enter")
-    DrawLeftText(xPos + 5, yPos + heightTextBlock + 60, "[X] : Backspace")
-    DrawLeftText(xPos + 5, yPos + heightTextBlock + 80, "[B] : Space")
-    DrawLeftText(xPos + 5, yPos + heightTextBlock + 100, "[Start]: Search")
-    DrawLeftText(xPos + 5, yPos + heightTextBlock + 120, "[Start + Select] : Exit")
-end
-
-function DrawCenteredText(rectX, rectY, rectWidth, text)
-    local font       = love.graphics.getFont()
-	local textWidth  = font:getWidth(text)
-	love.graphics.print(text, rectX + rectWidth / 2 - textWidth / 2, rectY)
-end
-
-function DrawLeftText(rectX, rectY, text)
-    love.graphics.print(text, rectX, rectY, 0, 1, 1)
+    Text.DrawLeftText(xPos + 5, yPos + heightTextBlock, "[A] : Play")
+    Text.DrawLeftText(xPos + 5, yPos + heightTextBlock + 20, "[L1]: Toggle Keyboard")
+    Text.DrawLeftText(xPos + 5, yPos + heightTextBlock + 40, "[Y] : Enter")
+    Text.DrawLeftText(xPos + 5, yPos + heightTextBlock + 60, "[X] : Backspace")
+    Text.DrawLeftText(xPos + 5, yPos + heightTextBlock + 80, "[B] : Space")
+    Text.DrawLeftText(xPos + 5, yPos + heightTextBlock + 100, "[Start]: Search")
+    Text.DrawLeftText(xPos + 5, yPos + heightTextBlock + 120, "[Start + Select] : Exit")
 end
 
 function love.gamepadpressed(joystick, button)
@@ -196,7 +206,7 @@ function love.gamepadpressed(joystick, button)
     if button == "a" then
         key = "a"
     end
-    if button == "b " then
+    if button == "b" then
         key = "b"
     end
     if button == "x" then
@@ -237,16 +247,15 @@ end
 
 function SearchData()
     for _,item in pairs(searchData) do
-        local thread = love.thread.newThread("threads/ImgDownload.lua")
-        thread:start()
-
-        local url_channel = love.thread.getChannel("download_url")
-        url_channel:push({id = item.id, url = item.thumbnail, type = "thumbnail"})
-        url_channel:push({id = item.id, url = item.thumbnailMed, type = "thumbnailMed"})
+        local uChn = Thread.GetDownloadUrlChannel()
+        uChn:push({id = item.id, url = item.thumbnail, type = "thumbnail"})
+        uChn:push({id = item.id, url = item.thumbnailMed, type = "thumbnailMed"})
     end
 end
 
 function OnKeyPress(key)
+    if isLoading then return end
+
     if key == "l1" or key == "l" then
         isKeyboarFocus = not isKeyboarFocus
     end
@@ -261,8 +270,12 @@ function OnKeyPress(key)
         if table.getn(searchData) >= cIdx  then
             local id = searchData[cIdx].id
             local url = string.format("https://www.youtube.com/watch?v=%s", id)
+            isLoading = true
             CT.Play(url)
         end
+    end
+
+    if key == "select" then
     end
 
     if key == "x" then
