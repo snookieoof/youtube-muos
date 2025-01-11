@@ -4,7 +4,7 @@ local CT = require("ct")
 local Font = require("font")
 local Keyboard = require("keyboard")
 
-local msg = ""
+local msg = "DEVELOPMENT STAGE"
 local hasAPIKEY = false
 
 local searchData = {}
@@ -20,7 +20,7 @@ function love.load()
     Keyboard:create()
 
     if CT.LoadAPIKEY() == "YOUR_API_KEY_HERE" then
-        msg = "APIKEY"
+        msg = "APIKEY is missing"
         return
     end
 
@@ -140,7 +140,7 @@ function BottomUI()
     love.graphics.rectangle("fill", xPos, yPos, 640, 29)
 
     love.graphics.setColor(1,1,1)
-    DrawLeftText(xPos, 450, msg)
+    DrawLeftText(xPos + 5, 450 + 5, msg)
 end
 
 function GuideUI()
