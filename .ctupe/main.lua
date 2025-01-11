@@ -264,15 +264,14 @@ function OnKeyPress(key)
         end
     end
 
+    if key == "x" then
+        if #keyboardText > 0 then
+            keyboardText = string.sub(keyboardText, 1, #keyboardText - 1)
+        end
+    end
+
     if isKeyboarFocus then
         Keyboard.keypressed(key, OnKeyboarCallBack)
-
-        if key == "x" then
-            if #keyboardText > 0 then
-                keyboardText = string.sub(keyboardText, 1, #keyboardText - 1)
-            end
-        end
-
         return
     end
 
