@@ -24,6 +24,9 @@ function love.load()
         return
     end
 
+    searchData = CT.LoadOldData()
+    SearchData()
+
     hasAPIKEY = true
 end
 
@@ -228,6 +231,16 @@ function OnKeyboarCallBack(value)
     end
 end
 
+function SearchData()
+    for _,item in pairs(searchData) do
+        local thread = love.thread.newThread("threads/ImgDownload.lua")
+        thread:start()
+
+        local url_channel = love.thread.getChannel("download_url")
+        url_channel:push({id = item.id, url = item.thumbnail, type = "thumbnail"})
+        url_channel:push({id = item.id, url = item.thumbnailMed, type = "thumbnailMed"})
+    end
+end
 
 function OnKeyPress(key)
     if key == "l1" or key == "l" then
@@ -237,15 +250,7 @@ function OnKeyPress(key)
     if (key == "start" or key == "s") and #keyboardText > 0 then
         if not hasAPIKEY then return end
         searchData = CT.Search(keyboardText)
-
-        for _,item in pairs(searchData) do
-            local thread = love.thread.newThread("threads/ImgDownload.lua")
-            thread:start()
-
-            local url_channel = love.thread.getChannel("download_url")
-            url_channel:push({id = item.id, url = item.thumbnail, type = "thumbnail"})
-            url_channel:push({id = item.id, url = item.thumbnailMed, type = "thumbnailMed"})
-        end
+        SearchData()
     end
 
     if isKeyboarFocus then

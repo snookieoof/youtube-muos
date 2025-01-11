@@ -5,21 +5,7 @@ local CT = {}
 
 local API_KEY = ""
 
-function CT.LoadAPIKEY()
-    local file = io.open(Config.API_KEY_PATH, "r")
-    API_KEY = file:read("*all")
-    file:close()
-
-    return API_KEY
-end
-
-function CT.Search(searchKey)
-    if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") ~= "1" then
-        local searchCmd = string.format(Config.SEARCH_URL, searchKey, Config.SEARCH_MAX_RESULT, API_KEY)
-        local command = "wget \"" .. searchCmd .."\" -O " .. Config.SEARCH_RESUTL_JSON
-        os.execute(command)
-    end
-
+function CT.LoadOldData()
     local file = io.open(Config.SEARCH_RESUTL_JSON, "r")
     local dataResultJs = file:read("*all")
     file:close()
@@ -45,6 +31,24 @@ function CT.Search(searchKey)
     end
 
     return resultData
+end
+
+function CT.LoadAPIKEY()
+    local file = io.open(Config.API_KEY_PATH, "r")
+    API_KEY = file:read("*all")
+    file:close()
+
+    return API_KEY
+end
+
+function CT.Search(searchKey)
+    if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") ~= "1" then
+        local searchCmd = string.format(Config.SEARCH_URL, searchKey, Config.SEARCH_MAX_RESULT, API_KEY)
+        local command = "wget \"" .. searchCmd .."\" -O " .. Config.SEARCH_RESUTL_JSON
+        os.execute(command)
+    end
+
+    return CT.LoadOldData()
 end
 
 function CT.GenerateMediaFile(url)
