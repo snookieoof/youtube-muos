@@ -66,7 +66,7 @@ function Keyboard:draw()
     end
 end
 
-function Keyboard.keypressed(key)
+function Keyboard.keypressed(key, callback)
     local row_index = 1
     local column_index = 1
 
@@ -96,6 +96,10 @@ function Keyboard.keypressed(key)
         if Keyboard.selected_key < #Keyboard.keys then
             Keyboard.selected_key = Keyboard.selected_key + 1
         end
+    end
+
+    if key == "a" then
+        callback(Keyboard.rows[row_index][column_index]:lower())
     end
 end
 

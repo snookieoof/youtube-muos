@@ -12,6 +12,9 @@ local imgDataList = {}
 local cPage = 1
 local cIdx = 1
 
+local isKeyboarFocus = false
+local keyboardText = ""
+
 function love.load()
     Font.Load()
     Keyboard:create()
@@ -142,14 +145,21 @@ function GuideUI()
     local yPos = 30 + 240
     local width = 239
     local height = 180
+    local heightTextBlock = 30
 
     love.graphics.setColor(0.004, 0.173, 0.231)
     love.graphics.rectangle("fill", xPos, yPos, width, height)
 
+    love.graphics.setColor(0.304, 0.173, 0.231, 1)
+    love.graphics.rectangle("fill", xPos + 15, yPos, width - 30, heightTextBlock)
+    love.graphics.setColor(1,1,1,0.9)
+    DrawLeftText(xPos + 15 + 2, yPos + 5, keyboardText)
+
     love.graphics.setColor(1,1,1,0.9)
     love.graphics.setFont(Font.Small())
-    DrawLeftText(xPos + 5, yPos, "[X]: Search")
-    DrawLeftText(xPos + 5, yPos + 20, "[A]: Play")
+    DrawLeftText(xPos + 5, yPos + heightTextBlock, "[X]: Search")
+    DrawLeftText(xPos + 5, yPos + heightTextBlock + 20, "[A]: Play")
+    DrawLeftText(xPos + 5, yPos + heightTextBlock + 40, "[L]: Keyboard")
 end
 
 function DrawCenteredText(rectX, rectY, rectWidth, text)
@@ -207,16 +217,26 @@ function love.gamepadpressed(joystick, button)
     OnKeyPress(key)
 end
 
-function love.keypressed( key )
+function love.keypressed(key)
 	OnKeyPress(key)
+end
+
+function OnKeyboarCallBack(value)
+    -- msg = value
+    if #keyboardText < 30 then
+        keyboardText = keyboardText .. value
+    end
 end
 
 
 function OnKeyPress(key)
-    Keyboard.keypressed(key)
-    if key == "x" then
+    if key == "l1" or key == "l" then
+        isKeyboarFocus = not isKeyboarFocus
+    end
+
+    if (key == "start" or key == "s") and #keyboardText > 0 then
         if not hasAPIKEY then return end
-        searchData = CT.Search("ghibli song")
+        searchData = CT.Search(keyboardText)
 
         for _,item in pairs(searchData) do
             local thread = love.thread.newThread("threads/ImgDownload.lua")
@@ -226,7 +246,18 @@ function OnKeyPress(key)
             url_channel:push({id = item.id, url = item.thumbnail, type = "thumbnail"})
             url_channel:push({id = item.id, url = item.thumbnailMed, type = "thumbnailMed"})
         end
-        msg = "done"
+    end
+
+    if isKeyboarFocus then
+        Keyboard.keypressed(key, OnKeyboarCallBack)
+
+        if key == "x" then
+            if #keyboardText > 0 then
+                keyboardText = string.sub(keyboardText, 1, #keyboardText - 1)
+            end
+        end
+
+        return
     end
 
     if key == "a" then
