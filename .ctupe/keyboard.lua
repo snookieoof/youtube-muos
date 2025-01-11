@@ -101,6 +101,10 @@ function Keyboard.keypressed(key, callback)
     if key == "y" then
         callback(Keyboard.rows[row_index][column_index]:lower())
     end
+
+    if key == "b" then
+        callback(" ")
+    end
 end
 
 return Keyboard

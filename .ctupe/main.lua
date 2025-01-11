@@ -164,8 +164,9 @@ function GuideUI()
     DrawLeftText(xPos + 5, yPos + heightTextBlock + 20, "[L1]: Toggle Keyboard")
     DrawLeftText(xPos + 5, yPos + heightTextBlock + 40, "[Y] : Enter")
     DrawLeftText(xPos + 5, yPos + heightTextBlock + 60, "[X] : Backspace")
-    DrawLeftText(xPos + 5, yPos + heightTextBlock + 80, "[Start]: Search")
-    DrawLeftText(xPos + 5, yPos + heightTextBlock + 100, "[Start + Select] : Exit")
+    DrawLeftText(xPos + 5, yPos + heightTextBlock + 80, "[B] : Space")
+    DrawLeftText(xPos + 5, yPos + heightTextBlock + 100, "[Start]: Search")
+    DrawLeftText(xPos + 5, yPos + heightTextBlock + 120, "[Start + Select] : Exit")
 end
 
 function DrawCenteredText(rectX, rectY, rectWidth, text)
