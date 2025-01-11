@@ -2,7 +2,7 @@ local love = require("love")
 local Config = require("config")
 local CT = require("ct")
 local Font = require("font")
-local http = require("socket.http")
+local Keyboard = require("keyboard")
 
 local msg = ""
 local hasAPIKEY = false
@@ -14,6 +14,7 @@ local cIdx = 1
 
 function love.load()
     Font.Load()
+    Keyboard:create()
 
     if CT.LoadAPIKEY() == "YOUR_API_KEY_HERE" then
         msg = "APIKEY"
@@ -29,6 +30,9 @@ function love.draw()
     BodyUI()
     BottomUI()
     GuideUI()
+
+    love.graphics.setFont(Font.Small())
+    Keyboard:draw()
 
     if not hasAPIKEY then return end
 end
@@ -207,7 +211,9 @@ function love.keypressed( key )
 	OnKeyPress(key)
 end
 
+
 function OnKeyPress(key)
+    Keyboard.keypressed(key)
     if key == "x" then
         if not hasAPIKEY then return end
         searchData = CT.Search("ghibli song")
