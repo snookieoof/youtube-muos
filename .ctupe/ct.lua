@@ -38,6 +38,7 @@ function CT.Search(searchKey)
                     title = item.snippet.title,
                     description = item.snippet.description,
                     thumbnail = item.snippet.thumbnails.default.url,
+                    thumbnailMed = item.snippet.thumbnails.medium.url,
                     channelTitle = item.snippet.channelTitle
                  })
         end

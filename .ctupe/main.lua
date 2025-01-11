@@ -8,7 +8,7 @@ local msg = ""
 local hasAPIKEY = false
 
 local searchData = {}
-local imgData = {}
+local imgDataList = {}
 local cPage = 1
 local cIdx = 1
 
@@ -34,6 +34,10 @@ function love.draw()
 end
 
 function love.update(dt)
+    local imgDownloaded = love.thread.getChannel("download_result"):pop()
+    if imgDownloaded then
+        table.insert(imgDataList, imgDownloaded)
+    end
 end
 
 -- Header
@@ -72,6 +76,8 @@ function BodyUI()
     local idxEnd = cPage * Config.GRID_PAGE_ITEM
     local iPos = 0
 
+    local imgSelected = nil
+
     for i = idxStart, idxEnd do
         if i > total then break end
 
@@ -79,8 +85,19 @@ function BodyUI()
         love.graphics.setColor(0.004, 0.173, 0.231)
         love.graphics.rectangle("fill", xPos, yPos + h , widthItem, heightItem)
 
-        love.graphics.setColor(1, 1, 1)
-        love.graphics.draw(imgData[i].data, xPos, yPos + h, 0, 0.66, 0.66, 0 , 0)
+        for _,imgData in pairs(imgDataList) do
+            if imgData.id == searchData[i].id and imgData.type == "thumbnail" then
+                local img = love.graphics.newImage(imgData.imgData)
+                love.graphics.setColor(1, 1, 1)
+                love.graphics.draw(img, xPos, yPos + h, 0, 0.66, 0.66, 0 , 0)
+            end
+
+            if cIdx == iPos + 1 then
+                if imgData.id == searchData[i].id and imgData.type == "thumbnailMed" then
+                    imgSelected = love.graphics.newImage(imgData.imgData)
+                end
+            end
+        end
 
         love.graphics.setColor(1,1,1,0.6)
         love.graphics.setFont(Font.Normal())
@@ -98,14 +115,12 @@ function BodyUI()
     end
 
     love.graphics.setColor(0.004, 0.173, 0.231)
-    love.graphics.rectangle("fill", xPos + widthItem + 1, yPos, widthImgMain, heightImgMain)
-end
-
-function imageFromUrl(url)
-	return love.graphics.newImage(
-	       love.image.newImageData(
-	       love.filesystem.newFileData(
-	       http.request(url), '', 'file')))
+    if imgSelected then
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.draw(imgSelected, xPos + widthItem + 1, yPos, 0, 0.8, 0.8, 0 , 0)
+    else
+        love.graphics.rectangle("fill", xPos + widthItem + 1, yPos, widthImgMain, heightImgMain)
+    end
 end
 
 function BottomUI()
@@ -116,7 +131,6 @@ function BottomUI()
 
     love.graphics.setColor(1,1,1)
     DrawLeftText(xPos, 450, msg)
-    -- love.graphics.print(msg, xPos + 5, yPos)
 end
 
 function GuideUI()
@@ -199,7 +213,12 @@ function OnKeyPress(key)
         searchData = CT.Search("ghibli song")
 
         for _,item in pairs(searchData) do
-            table.insert(imgData, {data = imageFromUrl(item.thumbnail)})
+            local thread = love.thread.newThread("threads/ImgDownload.lua")
+            thread:start()
+
+            local url_channel = love.thread.getChannel("download_url")
+            url_channel:push({id = item.id, url = item.thumbnail, type = "thumbnail"})
+            url_channel:push({id = item.id, url = item.thumbnailMed, type = "thumbnailMed"})
         end
         msg = "done"
     end
