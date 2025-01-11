@@ -4,6 +4,8 @@ a = p			# pause
 b = q           # quit
 x = m			# mute sound
 
+r1 = right
+
 
 #While playing
 #
