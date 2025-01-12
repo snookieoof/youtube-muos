@@ -38,7 +38,7 @@ SET_VAR "system" "foreground_process" "ffplay"
 $GPTOKEYB "ffplay" -c "$APP_DIR/general_ffplay.gptk" &
 youtube-dl -S "res:640" "$URL" -o - | /usr/bin/ffplay - -autoexit -loglevel quiet
 
-killall -q gptokeyb2
+kill -9 "$(pidof gptokeyb2)"
 
 unset SDL_HQ_SCALER SDL_ROTATION SDL_BLITTER_DISABLED
 ]]
