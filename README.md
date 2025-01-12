@@ -6,7 +6,7 @@
 ### Install:
 
 1. Require WIFI connection
-2. Download: [CTupeLoader.zip](https://github.com/user-attachments/files/18384660/CTupeLoader.zip)
+2. Download: [Release](https://github.com/nvcuong1312/YtMuos/releases)
 3. Extract and copy CTupeLoader.sh into "sd1/MUOS/Task"
 4. Run CTupeLoader from Application/Task ToolKit
 
