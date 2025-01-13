@@ -6,6 +6,8 @@ local Keyboard = require("keyboard")
 local Thread = require("thread")
 local Loading = require("loading")
 local Text = require("text")
+local Color = require("color")
+local Icon = require("icon")
 
 local msg = "DEVELOPMENT STAGE"
 local hasAPIKEY = false
@@ -25,19 +27,17 @@ function love.load()
     Keyboard:create()
     Thread.Create()
 
-    if CT.LoadAPIKEY() == "YOUR_API_KEY_HERE" then
-        msg = "APIKEY is missing"
-        return
-    end
+    CT.LoadSearchType()
+    CT.LoadAPIKEY()
 
-    searchData = CT.LoadOldData()
-    SearchData()
+    searchData = CT.LoadSearchData()
+    LoadImgData()
 
     hasAPIKEY = true
 end
 
 function love.draw()
-    love.graphics.setBackgroundColor(0.027, 0.004, 0.102)
+    love.graphics.setBackgroundColor(Color.BG)
     HeaderUI()
     BodyUI()
     BottomUI()
@@ -45,7 +45,7 @@ function love.draw()
 
     love.graphics.setFont(Font.Small())
 
-    Keyboard:draw()
+    Keyboard:draw(isKeyboarFocus)
 
     if isLoading then
         Loading.Draw()
@@ -58,6 +58,15 @@ function love.update(dt)
     local imgDownloaded = Thread.GetDownloadResutlChannel():pop()
     if imgDownloaded then
         table.insert(imgDataList, imgDownloaded)
+    end
+
+    local searchResult = Thread.GetSearchVideoResultChannel():pop()
+    if searchResult then
+        searchData = CT.LoadSearchData()
+        LoadImgData()
+        isLoading = false
+        cPage = 1
+        cIdx = 1
     end
 
     local playDone = Thread.GetPlayDone():pop()
@@ -75,17 +84,17 @@ function HeaderUI()
     local xPos = 0
     local yPos = 0
 
-    love.graphics.setColor(0.969, 0.153, 0.153)
+    love.graphics.setColor(Color.HEADER_BG)
     love.graphics.rectangle("fill", xPos, yPos, 640, 30)
 
-    love.graphics.setColor(0.98, 0.98, 0.749)
+    love.graphics.setColor(Color.HEADER_TEXT)
     love.graphics.setFont(Font.Big())
-    Text.DrawCenteredText(xPos, yPos, 640, "CTupe")
+    Text.DrawCenteredText(xPos, yPos + 3, 640, "CTupe")
 
     Now = os.date('*t')
     local formatted_time = string.format("%02d:%02d", tonumber(Now.hour), tonumber(Now.min))
-    love.graphics.setColor(0.98, 0.98, 0.749, 0.7)
-    Text.DrawLeftText(xPos, yPos, formatted_time)
+    love.graphics.setColor(Color.HEADER_TIME)
+    Text.DrawLeftText(xPos, yPos + 3, formatted_time)
 
     love.graphics.setFont(Font.Normal())
 end
@@ -96,10 +105,10 @@ function BodyUI()
     local widthItem = 400
     local heightItem = 83
     local widthImgItem = 83
-    local heigthImgItem = 83
+    local heigthImgItem = 63
 
     local widthImgMain = 239
-    local heightImgMain = 239
+    local heightImgMain = 145
 
     local total = table.getn(searchData)
     local idxStart = cPage * Config.GRID_PAGE_ITEM - Config.GRID_PAGE_ITEM + 1
@@ -107,47 +116,54 @@ function BodyUI()
     local iPos = 0
 
     local imgSelected = nil
+    local imgSelectedScale = {}
 
     for i = idxStart, idxEnd do
         if i > total then break end
 
         local h = heightItem * (iPos) + iPos + 1
-        love.graphics.setColor(0.004, 0.173, 0.231)
+        love.graphics.setColor(Color.BODY_ITEM_BG)
         love.graphics.rectangle("fill", xPos, yPos + h , widthItem, heightItem)
 
         for _,imgData in pairs(imgDataList) do
-            if imgData.id == searchData[i].id and imgData.type == "thumbnail" then
-                local img = love.graphics.newImage(imgData.imgData)
-                love.graphics.setColor(1, 1, 1)
-                love.graphics.draw(img, xPos, yPos + h, 0, 0.66, 0.66, 0 , 0)
-            end
-
-            if cIdx == iPos + 1 then
-                if imgData.id == searchData[i].id and imgData.type == "thumbnailMed" then
-                    imgSelected = love.graphics.newImage(imgData.imgData)
+            pcall(function ()
+                if imgData.id == searchData[i].id and imgData.type == "thumbnail" then
+                    local img = love.graphics.newImage(imgData.imgData)
+                    love.graphics.setColor(Color.WHITE)
+                    local scale = ScaleFactorImg(img:getWidth(), img:getHeight(), widthImgItem, heigthImgItem)
+                    love.graphics.draw(img, xPos, yPos + h, 0, scale.scaleW, scale.scaleH, 0 , 0)
                 end
-            end
+
+                if cIdx == iPos + 1 then
+                    if imgData.id == searchData[i].id and imgData.type == "thumbnail" then
+                        imgSelectedScale = ScaleFactorImg(imgData.width, imgData.height, widthImgMain, heightImgMain)
+                        imgSelected = love.graphics.newImage(imgData.imgData)
+                    end
+                end
+            end)
         end
 
-        love.graphics.setColor(1,1,1,0.6)
+        love.graphics.setColor(Color.BODY_TITLE_ITEM)
         love.graphics.setFont(Font.Normal())
         love.graphics.printf(searchData[i].title, xPos + widthImgItem + 1, yPos + h, 320)
+
+        love.graphics.setColor(Color.BODY_CHANNEL_ITEM)
         love.graphics.setFont(Font.Small())
         love.graphics.print(searchData[i].channelTitle, xPos, yPos + h + 63)
-        love.graphics.print(searchData[i].time, xPos + widthImgItem + 250, yPos + h + 63)
+        love.graphics.print(searchData[i].time, xPos + widthImgItem + 240, yPos + h + 63)
 
         if cIdx == iPos + 1 then
-            love.graphics.setColor(1, 1, 0.4, 0.15)
+            love.graphics.setColor(Color.BODY_ITEM_SEL_BG)
             love.graphics.rectangle("fill", xPos, yPos + h, widthItem, heightItem, 4)
         end
 
         iPos = iPos + 1
     end
 
-    love.graphics.setColor(0.004, 0.173, 0.231)
+    love.graphics.setColor(Color.BODY_IMG_DEF)
     if imgSelected then
-        love.graphics.setColor(1, 1, 1)
-        love.graphics.draw(imgSelected, xPos + widthItem + 1, yPos, 0, 0.8, 0.8, 0 , 0)
+        love.graphics.setColor(Color.WHITE)
+        love.graphics.draw(imgSelected, xPos + widthItem + 1, yPos, 0, imgSelectedScale.scaleW, imgSelectedScale.scaleH, 0 , 0)
     else
         love.graphics.rectangle("fill", xPos + widthItem + 1, yPos, widthImgMain, heightImgMain)
     end
@@ -156,7 +172,7 @@ end
 function BottomUI()
     local xPos = 0
     local yPos = 480 - 30 + 1
-    love.graphics.setColor(0.102, 0, 0.459)
+    love.graphics.setColor(Color.BOTTOM_BG)
     love.graphics.rectangle("fill", xPos, yPos, 640, 29)
 
     love.graphics.setColor(1,1,1)
@@ -166,27 +182,75 @@ end
 function GuideUI()
     local xPos = 401
     local yPos = 30 + 240
-    local width = 239
+    local width = 265
     local height = 180
     local heightTextBlock = 30
 
-    love.graphics.setColor(0.004, 0.173, 0.231)
-    love.graphics.rectangle("fill", xPos, yPos, width, height)
+    love.graphics.setColor(Color.GUIDE_BG)
+    love.graphics.rectangle("fill", xPos, yPos, width, height, 3,3)
 
-    love.graphics.setColor(0.304, 0.173, 0.231, 1)
-    love.graphics.rectangle("fill", xPos + 15, yPos, width - 30, heightTextBlock)
-    love.graphics.setColor(1,1,1,0.9)
-    Text.DrawLeftText(xPos + 15 + 2, yPos + 5, keyboardText)
+    love.graphics.setColor(Color.GUIDE_TB_BG)
+    love.graphics.rectangle("fill", xPos + 2, yPos + 2, width - 30, heightTextBlock, 3,3)
+    love.graphics.setColor(Color.GUIDE_TB_BOR_BG)
+    love.graphics.rectangle("line", xPos + 2, yPos + 2, width - 30, heightTextBlock, 3,3)
+    love.graphics.setColor(Color.GUIDE_TB)
+    Text.DrawLeftText(xPos + 2 + 2, yPos + 2 + 5, keyboardText)
+    love.graphics.setColor(Color.GUIDE_TB)
+    love.graphics.draw(Icon.Search, xPos + width - 50, yPos + 5, 0, 0.2)
 
-    love.graphics.setColor(1,1,1,0.9)
+    love.graphics.setColor(1,1,1,0.7)
     love.graphics.setFont(Font.Small())
-    Text.DrawLeftText(xPos + 5, yPos + heightTextBlock, "[A] : Play")
-    Text.DrawLeftText(xPos + 5, yPos + heightTextBlock + 20, "[L1]: Toggle Keyboard")
-    Text.DrawLeftText(xPos + 5, yPos + heightTextBlock + 40, "[Y] : Enter")
-    Text.DrawLeftText(xPos + 5, yPos + heightTextBlock + 60, "[X] : Backspace")
-    Text.DrawLeftText(xPos + 5, yPos + heightTextBlock + 80, "[B] : Space")
-    Text.DrawLeftText(xPos + 5, yPos + heightTextBlock + 100, "[Start]: Search")
-    Text.DrawLeftText(xPos + 5, yPos + heightTextBlock + 120, "[Start + Select] : Exit")
+
+    if isKeyboarFocus then
+        Text.DrawLeftText(xPos + 10, yPos + heightTextBlock + 20, "       Enter")
+        love.graphics.draw(Icon.Y, xPos + 5, yPos + heightTextBlock + 18, 0, 0.4)
+
+        Text.DrawLeftText(xPos + 10, yPos + heightTextBlock + 50, "       Backspace")
+        love.graphics.draw(Icon.X, xPos + 5, yPos + heightTextBlock + 48, 0, 0.4)
+
+        Text.DrawLeftText(xPos + 10 + 100, yPos + heightTextBlock + 20, "       Space")
+        love.graphics.draw(Icon.B, xPos + 5 + 100, yPos + heightTextBlock + 18, 0, 0.4)
+
+        Text.DrawLeftText(xPos + 10 + 100, yPos + heightTextBlock + 50, "       Search")
+        love.graphics.draw(Icon.Start, xPos + 5 + 100, yPos + heightTextBlock + 48, 0, 0.4)
+    else
+        Text.DrawLeftText(xPos + 10, yPos + heightTextBlock + 20, "       Play")
+        love.graphics.draw(Icon.A , xPos + 5, yPos + heightTextBlock + 18, 0, 0.4)
+    end
+
+    Text.DrawLeftText(xPos + 5, yPos + heightTextBlock + 120, "                     Exit")
+    love.graphics.draw(Icon.Select, xPos + 5, yPos + heightTextBlock + 118, 0, 0.4)
+    love.graphics.draw(Icon.Start, xPos + 5 + 30, yPos + heightTextBlock + 118, 0, 0.4)
+end
+
+function LoadImgData()
+    for _,item in pairs(searchData) do
+        local uChn = Thread.GetDownloadUrlChannel()
+        uChn:push(
+        {
+            id = item.id,
+            url = item.thumbnail.url,
+            width = item.thumbnail.width,
+            height = item.thumbnail.height,
+            type = "thumbnail"
+        })
+
+        -- uChn:push(
+        -- {
+        --     id = item.id,
+        --     url = item.thumbnailMed.url,
+        --     width = item.thumbnailMed.width,
+        --     height = item.thumbnailMed.height,
+        --     type = "thumbnailMed"
+        -- })
+    end
+end
+
+function ScaleFactorImg(imgW, imgH, eW, eH)
+    return {
+        scaleW = eW / imgW,
+        scaleH = eH / imgH
+    }
 end
 
 function love.gamepadpressed(joystick, button)
@@ -245,14 +309,6 @@ function OnKeyboarCallBack(value)
     end
 end
 
-function SearchData()
-    for _,item in pairs(searchData) do
-        local uChn = Thread.GetDownloadUrlChannel()
-        uChn:push({id = item.id, url = item.thumbnail, type = "thumbnail"})
-        uChn:push({id = item.id, url = item.thumbnailMed, type = "thumbnailMed"})
-    end
-end
-
 function OnKeyPress(key)
     if isLoading then return end
 
@@ -261,18 +317,8 @@ function OnKeyPress(key)
     end
 
     if (key == "start" or key == "s") and #keyboardText > 0 then
-        if not hasAPIKEY then return end
-        searchData = CT.Search(keyboardText)
-        SearchData()
-    end
-
-    if key == "a" then
-        if table.getn(searchData) >= cIdx  then
-            local id = searchData[cIdx].id
-            local url = string.format("https://www.youtube.com/watch?v=%s", id)
-            isLoading = true
-            CT.Play(url)
-        end
+        isLoading = true
+        CT.Search(keyboardText)
     end
 
     if key == "select" then
@@ -287,6 +333,13 @@ function OnKeyPress(key)
     if isKeyboarFocus then
         Keyboard.keypressed(key, OnKeyboarCallBack)
         return
+    end
+
+    if key == "a" then
+        if table.getn(searchData) >= cIdx  then
+            isLoading = true
+            CT.Play(string.format(Config.YT_PLAY_URL, searchData[cIdx].id))
+        end
     end
 
     if table.getn(searchData) > 0 then
