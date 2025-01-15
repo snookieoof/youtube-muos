@@ -2,6 +2,7 @@ local love = require("love")
 local http = require("socket.http")
 local ltn12 = require("ltn12")
 local Thread = require("thread")
+local Config = require("config")
 
 local rsChn  = Thread.GetDownloadResutlChannel()
 local uChn = Thread.GetDownloadUrlChannel()

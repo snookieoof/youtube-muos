@@ -11,6 +11,61 @@ local API_KEY = ""
 -- 2: v3
 local searchType = "1"
 
+local baseSavePath = ""
+
+function CT.LoadSavePath()
+    local savePath = io.open(Config.SAVE_PATH, "r")
+    if savePath then
+        baseSavePath = savePath:read("*all")
+    else
+        baseSavePath = "/mnt/mmc/ctupedownloaddata/"
+    end
+
+    return baseSavePath
+end
+
+function file_exists_cmd(path)
+    if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") ~= "1" then
+        local command = '[ -f "' .. path .. '" ]'
+        local result = os.execute(command)
+        return result == 0
+    else
+        local command = 'dir "' .. path .. '" >nul 2>&1'
+        local result = os.execute(command)
+        return result == 0
+    end
+end
+
+function CT.LoadDataFromSavePath()
+    local resultData = {}
+
+    local handle = nil
+    if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") ~= "1" then
+        handle = io.popen("ls -1 " .. baseSavePath)
+    else
+        handle = io.popen("dir /b " .. baseSavePath)
+    end
+
+    for fileId in handle:lines() do
+        local mediaPath = baseSavePath .. Config.PATH_SEPARATOR .. fileId .. Config.SAVE_MEDIA_PATH
+        local infoPath = baseSavePath .. Config.PATH_SEPARATOR .. fileId .. Config.SAVE_INFO_PATH
+        if file_exists_cmd(mediaPath) and file_exists_cmd(infoPath) then
+            local dtInfo = io.open(infoPath, "r")
+            if dtInfo then
+                local dataInfoJson = json.decode(dtInfo:read("*all"))
+                dtInfo:close()
+
+                dataInfoJson.mediaPath = mediaPath
+                table.insert(resultData, dataInfoJson)
+            end
+        end
+    end
+
+    handle:close()
+
+    return resultData
+end
+
 function CT.LoadSearchType()
     local typeFile = io.open(Config.SEARCH_TYPE, "r")
     if typeFile then
@@ -143,13 +198,20 @@ function CT.Search(search)
     Thread.GetSearchVideoKeywordChannel():push({type = searchType, search = search, key = API_KEY})
 end
 
-function CT.GenerateMediaFile(url)
-    local command = "youtube-dl -f \"bestvideo[width<=640][height<=480]+bestaudio\" -o - \"" .. url .."\" > " .. Config.MEDIA_PATH
-    os.execute(command)
+function CT.GenerateMediaFile(vData)
+    Thread.GetDownloadVideoUrlChannel():push({baseSavePath = baseSavePath, data = vData})
+end
+
+function CT.DeleteMediaFile(id)
+    Thread.GetDeleteVideoIdChannel():push({baseSavePath = baseSavePath, id = id})
 end
 
 function CT.Play(url)
-    Thread.GetPlayUrl():push(url)
+    Thread.GetPlayUrl():push({url = url, isOnline = true})
+end
+
+function CT.PlayOffline(url)
+    Thread.GetPlayUrl():push({url = url, isOnline = false})
 end
 
 return CT
