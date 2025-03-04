@@ -17,12 +17,12 @@ Color.BODY_CHANNEL_ITEM = {0.631, 0.584, 0.651}
 Color.BODY_IMG_DEF = {0.004, 0.173, 0.231}
 
 -- Bottom
-Color.BOTTOM_BG = {0.102, 0, 0.459}
+Color.BOTTOM_BG = {0.106, 0.031, 0.188} -- bottom bar color
 
 --Guide
-Color.GUIDE_BG = {0.004, 0.173, 0.231}
-Color.GUIDE_TB_BG = {0.145, 0.102, 0.2}
-Color.GUIDE_TB_BOR_BG = {0.282, 0.278, 0.29}
+Color.GUIDE_BG = {0.004, 0.173, 0.231} -- background color behind button hints
+Color.GUIDE_TB_BG = {0.145, 0.102, 0.2} --text box background
+Color.GUIDE_TB_BOR_BG = {0.282, 0.278, 0.29} --text box border
 Color.GUIDE_TB = {1,1,1,0.9}
 Color.GUIDE_TB = {1,1,1,0.9}
 
